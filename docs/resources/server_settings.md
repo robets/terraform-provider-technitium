@@ -99,6 +99,8 @@ resource "technitium_server_settings" "forwarding" {
 
 ### DNS Resolution
 
+* `dns_server_domain` - (Optional, String) Primary domain name used by this DNS server to identify itself.
+
 * `dnssec_validation` - (Optional, Boolean) Enable DNSSEC validation. STIG BIND-9X-001650 (SC-21). Default: `true`.
 
 * `recursion` - (Optional, String) Recursion policy. STIG BIND-9X-001380 (SC-5). Valid values: `Allow`, `Deny`, `AllowOnlyForPrivateNetworks`, `UseSpecifiedNetworkACL`. Default: `"AllowOnlyForPrivateNetworks"`.
