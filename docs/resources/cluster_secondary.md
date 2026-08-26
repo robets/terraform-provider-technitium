@@ -17,19 +17,23 @@ Joins a Technitium DNS server to an existing cluster as a Secondary node. The pr
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `node_ip_addresses` (List of String) Static IP addresses of the Secondary node, reachable by all other cluster nodes.
 - `node_url` (String) API base URL of the Secondary node to join, e.g. http://10.0.0.11:5380.
-- `primary_node_password` (String, Sensitive) Password of the Primary node administrator, used once during the join.
+- `primary_node_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password of the Primary node administrator, used once during the join.
 - `primary_node_url` (String) Web service HTTPS URL of the cluster's Primary node, e.g. https://dns01.example.com:53443/.
 - `primary_node_username` (String) Username of an administrator on the Primary node, used once during the join.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `ignore_certificate_errors` (Boolean) Set to true when the Primary node web service uses a self-signed TLS certificate reachable on a private network.
 - `join_timeout_seconds` (Number) Timeout for the join operation; the initial config sync can take a while.
-- `node_password` (String, Sensitive) Administrator password on the Secondary node.
+- `node_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Administrator password on the Secondary node.
 - `node_skip_tls_verify` (Boolean) Skip TLS certificate verification when connecting to the Secondary node (e.g. while it still uses a self-signed certificate).
-- `node_token` (String, Sensitive) API token on the Secondary node. Alternative to node_username/node_password.
+- `node_token` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) API token on the Secondary node. Alternative to node_username/node_password.
 - `node_username` (String) Administrator username on the Secondary node (used together with node_password when node_token is not set).
 - `primary_node_ip_address` (String) IP address of the Primary node. When unset, the domain name in primary_node_url is resolved by the Secondary.
 

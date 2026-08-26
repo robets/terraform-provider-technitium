@@ -193,10 +193,16 @@ func TestClusterSecondaryCreate_JoinLandedBeforeConnectionReset(t *testing.T) {
 
 	tfPlan := tfsdk.Plan{Schema: schemaResp.Schema}
 	if diags := tfPlan.Set(context.Background(), plan); diags.HasError() {
+		t.Fatalf("config.Set: %v", diags)
+	}
+	tfConfig := tfsdk.Config{Schema: schemaResp.Schema, Raw: tfPlan.Raw}
+	plan.NodeToken = types.StringNull()
+	plan.PrimaryNodePassword = types.StringNull()
+	if diags := tfPlan.Set(context.Background(), plan); diags.HasError() {
 		t.Fatalf("plan.Set: %v", diags)
 	}
 
-	req := resource.CreateRequest{Plan: tfPlan}
+	req := resource.CreateRequest{Config: tfConfig, Plan: tfPlan}
 	resp := &resource.CreateResponse{State: tfsdk.State{Schema: schemaResp.Schema}}
 
 	r.Create(context.Background(), req, resp)
@@ -214,6 +220,9 @@ func TestClusterSecondaryCreate_JoinLandedBeforeConnectionReset(t *testing.T) {
 	}
 	if saved.NodeName.ValueString() != "ns2.example.com" {
 		t.Fatalf("node_name = %q, want %q", saved.NodeName.ValueString(), "ns2.example.com")
+	}
+	if !saved.NodePassword.IsNull() || !saved.NodeToken.IsNull() || !saved.PrimaryNodePassword.IsNull() {
+		t.Fatal("write-only credentials must not be persisted in state")
 	}
 	if n := joinCalls(); n != 1 {
 		t.Fatalf("initJoin was called %d times; a landed join must not be blindly retried", n)

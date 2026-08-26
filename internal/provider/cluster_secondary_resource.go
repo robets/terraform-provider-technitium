@@ -94,11 +94,13 @@ func (r *ClusterSecondaryResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "Administrator password on the Secondary node.",
 				Optional:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 			},
 			"node_token": schema.StringAttribute{
 				Description: "API token on the Secondary node. Alternative to node_username/node_password.",
 				Optional:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 			},
 			"node_skip_tls_verify": schema.BoolAttribute{
 				Description: "Skip TLS certificate verification when connecting to the Secondary node " +
@@ -131,6 +133,7 @@ func (r *ClusterSecondaryResource) Schema(_ context.Context, _ resource.SchemaRe
 				Description: "Password of the Primary node administrator, used once during the join.",
 				Required:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 			},
 			"ignore_certificate_errors": schema.BoolAttribute{
 				Description: "Set to true when the Primary node web service uses a self-signed TLS " +
@@ -194,11 +197,15 @@ func (r *ClusterSecondaryResource) nodeClient(ctx context.Context, model *Cluste
 }
 
 func (r *ClusterSecondaryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ClusterSecondaryResourceModel
+	var plan, config ClusterSecondaryResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plan.NodePassword = config.NodePassword
+	plan.NodeToken = config.NodeToken
+	plan.PrimaryNodePassword = config.PrimaryNodePassword
 
 	nodeClient, err := r.nodeClient(ctx, &plan)
 	if err != nil {
@@ -258,6 +265,9 @@ func (r *ClusterSecondaryResource) Create(ctx context.Context, req resource.Crea
 
 	plan.NodeName = types.StringValue(info.DNSServerDomain)
 	plan.ID = types.StringValue(info.DNSServerDomain)
+	plan.NodePassword = types.StringNull()
+	plan.NodeToken = types.StringNull()
+	plan.PrimaryNodePassword = types.StringNull()
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -308,12 +318,16 @@ func (r *ClusterSecondaryResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *ClusterSecondaryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state ClusterSecondaryResourceModel
+	var plan, state, config ClusterSecondaryResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	plan.NodePassword = config.NodePassword
+	plan.NodeToken = config.NodeToken
+	plan.PrimaryNodePassword = config.PrimaryNodePassword
 
 	if !plan.NodeIPAddresses.Equal(state.NodeIPAddresses) {
 		nodeClient, err := r.nodeClient(ctx, &plan)
@@ -334,6 +348,9 @@ func (r *ClusterSecondaryResource) Update(ctx context.Context, req resource.Upda
 
 	plan.ID = state.ID
 	plan.NodeName = state.NodeName
+	plan.NodePassword = types.StringNull()
+	plan.NodeToken = types.StringNull()
+	plan.PrimaryNodePassword = types.StringNull()
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
