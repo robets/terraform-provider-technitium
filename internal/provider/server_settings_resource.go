@@ -41,6 +41,7 @@ type ServerSettingsResource struct {
 
 type ServerSettingsResourceModel struct {
 	ID                           types.String `tfsdk:"id"`
+	DnsServerDomain              types.String `tfsdk:"dns_server_domain"`
 	DnssecValidation             types.Bool   `tfsdk:"dnssec_validation"`
 	Recursion                    types.String `tfsdk:"recursion"`
 	RecursionNetworkACL          types.List   `tfsdk:"recursion_network_acl"`
@@ -94,6 +95,11 @@ func (r *ServerSettingsResource) Schema(_ context.Context, _ resource.SchemaRequ
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"dns_server_domain": schema.StringAttribute{
+				Description: "Primary domain name used by this DNS server to identify itself.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"dnssec_validation": schema.BoolAttribute{
 				Description: "Enable DNSSEC validation. STIG BIND-9X-001650 (SC-21).",
@@ -413,6 +419,7 @@ func (r *ServerSettingsResource) ImportState(ctx context.Context, req resource.I
 func (r *ServerSettingsResource) buildParams(ctx context.Context, model *ServerSettingsResourceModel) map[string]string {
 	params := map[string]string{}
 
+	setString(params, "dnsServerDomain", model.DnsServerDomain)
 	setBool(params, "dnssecValidation", model.DnssecValidation)
 	setString(params, "recursion", model.Recursion)
 	setStringList(ctx, params, "recursionNetworkACL", model.RecursionNetworkACL)
@@ -461,6 +468,7 @@ func (r *ServerSettingsResource) readState(ctx context.Context, model *ServerSet
 	model.ID = types.StringValue("server-settings")
 	model.Version = types.StringValue(settings.Version)
 	model.Uptime = types.StringValue(settings.Uptimestamp)
+	model.DnsServerDomain = types.StringValue(settings.DnsServerDomain)
 	model.DnssecValidation = types.BoolValue(settings.DnssecValidation)
 	model.Recursion = types.StringValue(settings.Recursion)
 	model.QnameMinimization = types.BoolValue(settings.QnameMinimization)

@@ -4,11 +4,23 @@
 package provider
 
 import (
+	"context"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
+
+func TestServerSettingsResource_DNSServerDomainParam(t *testing.T) {
+	params := (&ServerSettingsResource{}).buildParams(context.Background(), &ServerSettingsResourceModel{
+		DnsServerDomain: types.StringValue("ns1.example.com"),
+	})
+
+	if got := params["dnsServerDomain"]; got != "ns1.example.com" {
+		t.Fatalf("dnsServerDomain = %q, want ns1.example.com", got)
+	}
+}
 
 func TestAccServerSettingsResource_STIGDefaults(t *testing.T) {
 	resource.Test(t, resource.TestCase{

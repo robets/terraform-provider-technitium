@@ -27,6 +27,7 @@ type ServerSettingsDataSourceModel struct {
 	ID                           types.String `tfsdk:"id"`
 	Version                      types.String `tfsdk:"version"`
 	Uptime                       types.String `tfsdk:"uptime"`
+	DnsServerDomain              types.String `tfsdk:"dns_server_domain"`
 	DnssecValidation             types.Bool   `tfsdk:"dnssec_validation"`
 	Recursion                    types.String `tfsdk:"recursion"`
 	QnameMinimization            types.Bool   `tfsdk:"qname_minimization"`
@@ -62,6 +63,7 @@ func (d *ServerSettingsDataSource) Schema(_ context.Context, _ datasource.Schema
 			"id":                               schema.StringAttribute{Computed: true, Description: "Fixed identifier."},
 			"version":                          schema.StringAttribute{Computed: true, Description: "Server version."},
 			"uptime":                           schema.StringAttribute{Computed: true, Description: "Server uptime timestamp."},
+			"dns_server_domain":                schema.StringAttribute{Computed: true, Description: "Primary domain name used by this DNS server to identify itself."},
 			"dnssec_validation":                schema.BoolAttribute{Computed: true, Description: "DNSSEC validation enabled."},
 			"recursion":                        schema.StringAttribute{Computed: true, Description: "Recursion policy."},
 			"qname_minimization":               schema.BoolAttribute{Computed: true, Description: "QNAME minimization enabled."},
@@ -112,6 +114,7 @@ func (d *ServerSettingsDataSource) Read(ctx context.Context, _ datasource.ReadRe
 		ID:                           types.StringValue("server-settings"),
 		Version:                      types.StringValue(settings.Version),
 		Uptime:                       types.StringValue(settings.Uptimestamp),
+		DnsServerDomain:              types.StringValue(settings.DnsServerDomain),
 		DnssecValidation:             types.BoolValue(settings.DnssecValidation),
 		Recursion:                    types.StringValue(settings.Recursion),
 		QnameMinimization:            types.BoolValue(settings.QnameMinimization),
