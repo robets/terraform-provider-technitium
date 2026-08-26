@@ -13,6 +13,11 @@ on:
         description: "Provider SemVer to publish (for example: 1.2.3-robets.1)"
         required: true
         type: string
+      ref:
+        description: "Branch, tag, or commit to build (for example: feature/write-only-cluster-credentials)"
+        required: true
+        default: "main"
+        type: string
 
 permissions:
   contents: read
@@ -30,6 +35,9 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
@@ -44,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
             version="${GITHUB_REF_NAME#ghcr-v}"
           else
             version="${DISPATCH_VERSION}"
@@ -168,4 +176,5 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           echo "Published ${OCI_REPOSITORY}:${VERSION}"
+          echo "Source commit: $(git rev-parse HEAD)"
           echo "OpenTofu provider source remains: darkhonor/technitium"
