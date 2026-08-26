@@ -1,0 +1,28 @@
+---
+subcategory: ""
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+description: |-
+  Manages a Technitium APP record. The referenced DNS application must already be installed
+  on the server.
+---
+
+# technitium\_app\_record (Resource)
+
+Manages the singular Technitium APP record at a DNS name. The referenced DNS application
+must already be installed on the server.
+
+APP records are exclusive with ordinary DNS records at the same name and are not supported
+in DNSSEC-signed primary zones. `record_data` is application-defined and may be empty or use
+a format other than JSON; use `jsonencode` when the selected handler expects JSON.
+
+## Example Usage
+
+{{tffile "examples/resources/technitium_app_record/resource.tf"}}
+
+## Import
+
+Import an APP record with its zone and fully qualified name separated by `::`:
+
+```shell
+terraform import technitium_app_record.service 'example.com::service.example.com'
+```

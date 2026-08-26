@@ -414,6 +414,7 @@ func (p *TechnitiumProvider) Resources(_ context.Context) []func() resource.Reso
 	return []func() resource.Resource{
 		NewZoneResource,
 		NewRecordResource,
+		NewAppRecordResource,
 		NewServerSettingsResource,
 		NewTSIGKeyResource,
 		NewBlockedZoneResource,
