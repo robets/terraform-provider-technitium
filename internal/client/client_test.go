@@ -257,6 +257,30 @@ func TestDoPost_APIError(t *testing.T) {
 	}
 }
 
+func TestSettingsGet_DNSServerLocalEndPoints(t *testing.T) {
+	ts := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/settings/get" {
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+		if err := json.NewEncoder(w).Encode(APIResponse{
+			Status:   "ok",
+			Response: json.RawMessage(`{"dnsServerLocalEndPoints":["127.0.0.1:53","10.1.2.2:53"]}`),
+		}); err != nil {
+			t.Fatalf("failed to encode response: %v", err)
+		}
+	})
+	defer ts.Close()
+
+	c, _ := NewClient(ClientConfig{BaseURL: ts.URL, Token: "test-token"})
+	settings, err := c.SettingsGet(context.Background())
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := strings.Join(settings.DnsServerLocalEndPoints, ","); got != "127.0.0.1:53,10.1.2.2:53" {
+		t.Fatalf("dnsServerLocalEndPoints = %q", got)
+	}
+}
+
 func TestPing_Success(t *testing.T) {
 	ts := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(APIResponse{Status: "ok"}); err != nil {

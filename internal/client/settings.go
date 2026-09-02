@@ -31,6 +31,7 @@ type ServerSettings struct {
 	Version                      string    `json:"version"`
 	Uptimestamp                  string    `json:"uptimestamp"`
 	DnsServerDomain              string    `json:"dnsServerDomain"`
+	DnsServerLocalEndPoints      []string  `json:"dnsServerLocalEndPoints"`
 	DnssecValidation             bool      `json:"dnssecValidation"`
 	Recursion                    string    `json:"recursion"`
 	RecursionNetworkACL          []string  `json:"recursionNetworkACL"`
