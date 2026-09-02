@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `technitium_server_settings.dns_server_local_endpoints` manages the IP
+  address and port endpoints used by the DNS listener.
 - `technitium_app_record` manages Technitium APP records, including import and
   application-defined record data. (#24)
 - Contributed by [@Ujstor](https://github.com/Ujstor). New resources: `technitium_cluster` (Primary initialization),

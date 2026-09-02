@@ -42,6 +42,7 @@ type ServerSettingsResource struct {
 type ServerSettingsResourceModel struct {
 	ID                           types.String `tfsdk:"id"`
 	DnsServerDomain              types.String `tfsdk:"dns_server_domain"`
+	DnsServerLocalEndpoints      types.List   `tfsdk:"dns_server_local_endpoints"`
 	DnssecValidation             types.Bool   `tfsdk:"dnssec_validation"`
 	Recursion                    types.String `tfsdk:"recursion"`
 	RecursionNetworkACL          types.List   `tfsdk:"recursion_network_acl"`
@@ -100,6 +101,11 @@ func (r *ServerSettingsResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Primary domain name used by this DNS server to identify itself.",
 				Optional:    true,
 				Computed:    true,
+			},
+			"dns_server_local_endpoints": schema.ListAttribute{
+				Description: "Local IP address and port endpoints the DNS server listens on, for example 127.0.0.1:53 or [::1]:53.",
+				Optional:    true,
+				ElementType: types.StringType,
 			},
 			"dnssec_validation": schema.BoolAttribute{
 				Description: "Enable DNSSEC validation. STIG BIND-9X-001650 (SC-21).",
@@ -420,6 +426,7 @@ func (r *ServerSettingsResource) buildParams(ctx context.Context, model *ServerS
 	params := map[string]string{}
 
 	setString(params, "dnsServerDomain", model.DnsServerDomain)
+	setStringList(ctx, params, "dnsServerLocalEndPoints", model.DnsServerLocalEndpoints)
 	setBool(params, "dnssecValidation", model.DnssecValidation)
 	setString(params, "recursion", model.Recursion)
 	setStringList(ctx, params, "recursionNetworkACL", model.RecursionNetworkACL)
@@ -469,6 +476,7 @@ func (r *ServerSettingsResource) readState(ctx context.Context, model *ServerSet
 	model.Version = types.StringValue(settings.Version)
 	model.Uptime = types.StringValue(settings.Uptimestamp)
 	model.DnsServerDomain = types.StringValue(settings.DnsServerDomain)
+	readStringList(ctx, &model.DnsServerLocalEndpoints, settings.DnsServerLocalEndPoints)
 	model.DnssecValidation = types.BoolValue(settings.DnssecValidation)
 	model.Recursion = types.StringValue(settings.Recursion)
 	model.QnameMinimization = types.BoolValue(settings.QnameMinimization)

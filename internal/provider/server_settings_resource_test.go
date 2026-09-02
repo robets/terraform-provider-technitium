@@ -22,6 +22,24 @@ func TestServerSettingsResource_DNSServerDomainParam(t *testing.T) {
 	}
 }
 
+func TestServerSettingsResource_DNSServerLocalEndpointsParam(t *testing.T) {
+	endpoints, diags := types.ListValueFrom(context.Background(), types.StringType, []string{
+		"127.0.0.1:53",
+		"10.1.2.2:53",
+	})
+	if diags.HasError() {
+		t.Fatalf("building endpoint list: %v", diags)
+	}
+
+	params := (&ServerSettingsResource{}).buildParams(context.Background(), &ServerSettingsResourceModel{
+		DnsServerLocalEndpoints: endpoints,
+	})
+
+	if got := params["dnsServerLocalEndPoints"]; got != "127.0.0.1:53,10.1.2.2:53" {
+		t.Fatalf("dnsServerLocalEndPoints = %q", got)
+	}
+}
+
 func TestAccServerSettingsResource_STIGDefaults(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -31,6 +49,8 @@ func TestAccServerSettingsResource_STIGDefaults(t *testing.T) {
 				Config: testAccServerSettingsSTIG(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "id", "server-settings"),
+					resource.TestCheckResourceAttr("technitium_server_settings.main", "dns_server_local_endpoints.#", "1"),
+					resource.TestCheckResourceAttr("technitium_server_settings.main", "dns_server_local_endpoints.0", "127.0.0.1:53"),
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "dnssec_validation", "true"),
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "recursion", "AllowOnlyForPrivateNetworks"),
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "qname_minimization", "true"),
@@ -48,6 +68,8 @@ func TestAccServerSettingsResource_STIGDefaults(t *testing.T) {
 				Config: testAccServerSettingsCustom(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "randomize_name", "true"),
+					resource.TestCheckResourceAttr("technitium_server_settings.main", "dns_server_local_endpoints.#", "2"),
+					resource.TestCheckResourceAttr("technitium_server_settings.main", "dns_server_local_endpoints.1", "127.0.0.1:5353"),
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "forwarder_protocol", "Https"),
 					resource.TestCheckResourceAttr("technitium_server_settings.main", "udp_payload_size", "1400"),
 				),
@@ -59,7 +81,7 @@ func TestAccServerSettingsResource_STIGDefaults(t *testing.T) {
 				ImportStateId:     "server-settings",
 				ImportStateVerify: true,
 				// forwarder_protocol is only persisted by API when forwarders are configured
-				ImportStateVerifyIgnore: []string{"forwarder_protocol"},
+				ImportStateVerifyIgnore: []string{"dns_server_local_endpoints", "forwarder_protocol"},
 			},
 		},
 	})
@@ -83,6 +105,7 @@ func TestAccServerSettingsDataSource(t *testing.T) {
 func testAccServerSettingsSTIG() string {
 	return testAccProviderHCL() + `
 resource "technitium_server_settings" "main" {
+  dns_server_local_endpoints = ["127.0.0.1:53"]
   dnssec_validation  = true
   recursion          = "AllowOnlyForPrivateNetworks"
   qname_minimization = true
@@ -100,6 +123,7 @@ resource "technitium_server_settings" "main" {
 func testAccServerSettingsCustom() string {
 	return testAccProviderHCL() + `
 resource "technitium_server_settings" "main" {
+  dns_server_local_endpoints = ["127.0.0.1:53", "127.0.0.1:5353"]
   dnssec_validation  = true
   recursion          = "AllowOnlyForPrivateNetworks"
   qname_minimization = true
